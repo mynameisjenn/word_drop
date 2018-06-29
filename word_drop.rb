@@ -1,8 +1,7 @@
 require 'gosu'
-require_relative 'square'
+require_relative 'word_block'
 require_relative 'score'
 require_relative 'prompt'
-require_relative 'timer'
 
 
 WIDTH = 500
@@ -14,49 +13,60 @@ class WordDrop < Gosu::Window
   def initialize
     super(WIDTH, HEIGHT)
     self.caption = "Word Drop"
-    @square = Square.new(self, @column, 0, :green, @word)
     @squares = [ ]
+    @prompts = [ ]
+
     @mag_glass = Gosu::Image.new('visuals/hand.png')
     @score = Score.new(self, @x, @y, 2)
-    @prompt = Prompt.new(self, @x, @y, 2)
-    @timer = Timer.new(self, @x, @y, 2)
+    @prompt = Prompt.new(self, 'noun')
     @background = Gosu::Image.new('visuals/back.png')
-  
+
+    response = Unirest.get("http://localhost:3000/api/words")
+    @hidden_list = response.body["words"].shuffle!
+
   end
 
   def update
-    @square.fall
-    @timer.start
-    if @square.stack_6
+    new_square = true
+
+    @squares.each do |square|
+      square.check_collision_with_floor
+      square.fall
+     
+      new_square = false if square.speed != 0
+      @squares.each do |compare_square|
+        square.check_square_collision(compare_square)
+      end
+    end
+
+    if new_square
+      @square = WordBlock.new(self, @column, 0, :purple, @hidden_list.pop)
       @squares << @square
 
-      @square = Square.new(self, @column, 0, :purple, @word)
-      @prompt = Prompt.new(self, @x, @y, 2)
+      @prompt = Prompt.new(self, 'noun')
+      @prompts << @prompt
     end
-    
-    @timer.stop
-    @squares << @square
+
   end
 
 
   def draw
-    @square.draw
-    @mag_glass.draw(mouse_x - 25, mouse_y - 25, 3)
+    @squares.each do |square|
+      square.draw
+    end
+    @mag_glass.draw(mouse_x - 25, mouse_y, 3)
     @score.draw
     @prompt.draw
     @background.draw(0, 0, 0)
-    @timer.draw
+   
   end
 
   def button_down(id)
-    if (id == Gosu::MsLeft) && Gosu.distance(mouse_x - 25, mouse_y - 25, @square.current_x, @square.current_y) < 50 
-      @square.clear
-      @square = Square.new(self, @column, 0, :purple, @word)
-      @prompt = Prompt.new(self, @x, @y, 2)
-      @score.correct
-    elsif
-      (id == Gosu::MsLeft) && Gosu.distance(mouse_x - 25, mouse_y - 25, @square.current_x, @square.current_y) < 50 
-      @score.incorrect
+    if (id == Gosu::MsLeft) 
+      @squares.delete_if do |square| 
+        square.left < mouse_x && square.right > mouse_x && square.top < mouse_y && square.bottom > mouse_y 
+      end
+    @score.correct
     end
   end
   
