@@ -1,7 +1,9 @@
 require 'gosu'
+require 'unirest'
 require_relative 'word_block'
 require_relative 'score'
 require_relative 'prompt'
+
 
 
 WIDTH = 500
@@ -13,63 +15,85 @@ class WordDrop < Gosu::Window
   def initialize
     super(WIDTH, HEIGHT)
     self.caption = "Word Drop"
-    @squares = [ ]
-    @prompts = [ ]
-
-    @mag_glass = Gosu::Image.new('visuals/hand.png')
-    @score = Score.new(self, @x, @y, 2)
-    @prompt = Prompt.new(self, 'noun')
-    @background = Gosu::Image.new('visuals/back.png')
+    @blocks = [ ]
 
     response = Unirest.get("http://localhost:3000/api/words")
     @hidden_list = response.body["words"].shuffle!
 
+    @prompt_objects = response.body["word_types"].map do |word_type|
+      Prompt.new(self, word_type)
+    end
+
+    @mag_glass = Gosu::Image.new('visuals/hand.png')
+    @score = Score.new(self, @x, @y, 2)
+    @background = Gosu::Image.new('visuals/back.png')
   end
 
   def update
-    new_square = true
 
-    @squares.each do |square|
-      square.check_collision_with_floor
-      square.fall
-     
-      new_square = false if square.speed != 0
-      @squares.each do |compare_square|
-        square.check_square_collision(compare_square)
-      end
+    new_block = true
+
+    @blocks.each do |block|
+      block.fall
     end
 
-    if new_square
-      @square = WordBlock.new(self, @column, 0, :purple, @hidden_list.pop)
-      @squares << @square
+    @blocks.each do |block|
+      collided = false
 
-      @prompt = Prompt.new(self, 'noun')
-      @prompts << @prompt
+      @blocks.each do |compare_block|
+        if block.collision_with_block(compare_block)
+          collided = true
+        end
+      end
+
+      if collided
+        block.speed = 0
+      else
+        block.speed = 2
+      end
+
+      block.collision_with_floor
+
+    end
+
+    @blocks.each do |block|
+      new_block = false if block.speed != 0
+    end
+
+
+    if new_block
+      @blocks << WordBlock.new(
+                              window: self, 
+                              word_data: @hidden_list.pop
+                              )
+      @prompt_object = @prompt_objects.sample
     end
 
   end
 
-
   def draw
-    @squares.each do |square|
-      square.draw
+    @blocks.each do |block|
+      block.draw
     end
-    @mag_glass.draw(mouse_x - 25, mouse_y, 3)
+    @mag_glass.draw(mouse_x, mouse_y, 3)
     @score.draw
-    @prompt.draw
+    @prompt_object.draw
     @background.draw(0, 0, 0)
-   
   end
 
   def button_down(id)
     if (id == Gosu::MsLeft) 
-      @squares.delete_if do |square| 
-        square.left < mouse_x && square.right > mouse_x && square.top < mouse_y && square.bottom > mouse_y 
+      @blocks.each do |block|
+        # if @prompt_object.word_type == 
+          if block.left < mouse_x && block.right > mouse_x && block.top < mouse_y && block.bottom > mouse_y 
+            @blocks.delete block
+          end
+        # end
       end
-    @score.correct
     end
+    @score.correct
   end
-  
+
 end
 
 window = WordDrop.new
