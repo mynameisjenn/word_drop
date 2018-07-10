@@ -12,6 +12,5 @@ class TextInput < Gosu::Window
   end
 end 
 
-# window = TextInput.new.show
 
 
