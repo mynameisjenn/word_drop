@@ -5,6 +5,7 @@ require_relative 'word_list'
 require_relative 'score'
 require_relative 'prompt'
 
+
 class WordDrop < Gosu::Window
   WIDTH = 500
   HEIGHT = 700
@@ -32,6 +33,7 @@ class WordDrop < Gosu::Window
       draw_end
     end
   end
+
 
   def draw_start
     @background_image.draw(0,0,0)
@@ -143,7 +145,6 @@ class WordDrop < Gosu::Window
 
     initialize_end(:too_many) if @word_list.count > 2
     initialize_end(:less_than_five) if @word_list.count == 0
-
   end
 
   def button_down_game(id)
@@ -162,6 +163,7 @@ class WordDrop < Gosu::Window
         end
       end
     end
+    @score.correct
   end
 
   def initialize_end(fate)
@@ -201,7 +203,6 @@ class WordDrop < Gosu::Window
       close
     end      
   end
-
 end
 
 window = WordDrop.new

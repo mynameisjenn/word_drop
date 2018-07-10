@@ -15,7 +15,5 @@ class Prompt
     @x_text = @x_start - @font.text_width("#{@word_type}") / 2
     @font.draw("Click the #{@word_type}!!", @x_text, @y, 2) 
   end
-
-
 end
 
