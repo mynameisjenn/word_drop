@@ -1,12 +1,12 @@
 require 'gosu'
 
+
 GRID_IN_PIXELS = 50
-DEFAULT_SPEED = 2
 
 class Word
-  attr_accessor  :speed, :height
+  attr_accessor  :speed, :height, :current_y, :current_x
 
-  attr_reader :id, :content, :noun, :verb, :adjective, :pronoun, :preposition, :article, :conjunction, :adverb, :current_y, :current_x, :color
+  attr_reader :id, :content, :noun, :verb, :adjective, :pronoun, :preposition, :article, :conjunction, :adverb, :color
 
   def initialize(options)
                   
@@ -34,7 +34,7 @@ class Word
 
       @column = rand(0..6)
       @row = 0
-
+      
       @current_y = @row * GRID_IN_PIXELS
       @current_x = @column * GRID_IN_PIXELS
 
@@ -43,7 +43,7 @@ class Word
       @height = @@font.height
       @border_width = 1
 
-      @speed = DEFAULT_SPEED
+      @speed = 1
   end
 
   def check_type(word_type)
@@ -69,8 +69,17 @@ class Word
     end
   end
 
+
   def fall
     @current_y += speed
+  end
+
+  def move_right
+    @current_x += GRID_IN_PIXELS
+  end
+
+  def move_left
+    @current_x -= GRID_IN_PIXELS
   end
 
   def find_width
@@ -85,10 +94,26 @@ class Word
   end
 
   def collision_with_floor
-    if current_y > 550
+    if current_y.floor >= 550
       @speed = 0
+      @current_y = 550
     end
   end
+
+  def collision_with_row_one
+    if current_y.floor >= 500 
+      @current_y = 500
+    end
+  end
+
+  def collision_with_row_two
+      @current_y = 450
+  end
+
+  def collision_with_ceiling
+    current_y <= 5
+  end
+
 
   def top
     current_y
@@ -97,6 +122,12 @@ class Word
   def bottom
     current_y + GRID_IN_PIXELS
   end
+
+
+  def bottom_minus_increment
+    current_y + GRID_IN_PIXELS - 1
+  end
+
 
   def left
     current_x
@@ -115,12 +146,16 @@ class Word
   end
 
   def collision_with_block(other_square)
-    if self != other_square && bottom == other_square.top 
+    if self != other_square && bottom.floor == other_square.top.floor
+
       unless left_of?(other_square) || right_of?(other_square)
         @speed = 0
-      end
+        collision_with_row_one
+      end      
     end
   end
+
+
 
 end
 
