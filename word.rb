@@ -100,16 +100,6 @@ class Word
     end
   end
 
-  def collision_with_row_one
-    if current_y.floor >= 500 
-      @current_y = 500
-    end
-  end
-
-  def collision_with_row_two
-      @current_y = 450
-  end
-
   def collision_with_ceiling
     current_y <= 5
   end
@@ -122,12 +112,6 @@ class Word
   def bottom
     current_y + GRID_IN_PIXELS
   end
-
-
-  def bottom_minus_increment
-    current_y + GRID_IN_PIXELS - 1
-  end
-
 
   def left
     current_x
@@ -146,16 +130,12 @@ class Word
   end
 
   def collision_with_block(other_square)
-    if self != other_square && bottom.floor == other_square.top.floor
-
+    if self != other_square && bottom == other_square.top
       unless left_of?(other_square) || right_of?(other_square)
-        @speed = 0
-        collision_with_row_one
+        @speed = 0   
       end      
     end
   end
-
-
 
 end
 

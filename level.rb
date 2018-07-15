@@ -1,11 +1,11 @@
 require 'gosu'
 
 class Level
-  attr_accessor :level_increment
+  attr_accessor :value
 
-  def initialize(window, text, x, y)
+  def initialize(window)
     @font = Gosu::Font.new(window, "visuals/ARCADE.TTF", 50)
-    @level_increment = 1
+    @value = 1
     @x = 450
     @y = 650
     @window = window
@@ -13,15 +13,15 @@ class Level
 
   def draw_game
     @font.draw("Level", 300, @y, 2)
-    @font.draw("#{@level_increment}", @x, @y, 2)
+    @font.draw("#{@value}", @x, @y, 2)
   end
 
   def draw_end
     @font.draw("Level", 300, @y, 2)
-    @font.draw("#{@level_increment}", @x, @y, 2)
+    @font.draw("#{@value}", @x, @y, 2)
   end
 
-  def change_level
+  def increase_level
     @value += 1
   end
 
