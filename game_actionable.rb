@@ -3,8 +3,8 @@ module GameActionable
   def initialize_game
 
     @mag_glass = Gosu::Image.new('visuals/hand.png')
-    @score = Score.new(self, @x, @y, 2)
-    @level = Level.new(self, @x, @y, 2)
+    @score = Score.new(self)
+    @level = Level.new(self)
 
     @count = 0
     @background = Gosu::Image.new('visuals/back.png')
@@ -26,9 +26,6 @@ module GameActionable
 
     @word_list.each do |word|
       word.fall
-      p word.speed
-      p word.current_y
-      p word.current_x
     end
 
     check_for_collision
@@ -42,39 +39,13 @@ module GameActionable
       @word_list << @hidden_list.shift
     end
 
-    if @hidden_list.length <= 15
-      get_words_from_grammarslayer
+    if @hidden_list.length <= 30
+      get_words_from_grammarslayer(@level.value)
     end
 
-    if @count >= 15
+    if @count / 5 == @level.value
       level_up
-    end
-
-    if @count >= 4
-      level_up
-    end 
-
-    if @count >= 6
-      level_up
-    end 
-
-    if @count >= 8
-      level_up
-    end 
-
-    if @count >= 10
-      level_up
-    end
-
-    if @count >= 12
-      level_up
-    end
-
-    if @count >= 14
-      level_up
-    end
-
-  
+    end  
 
     initialize_end(:too_many_words) if stacked_too_high?     
   end

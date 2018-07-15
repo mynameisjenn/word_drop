@@ -21,7 +21,15 @@ class WordDrop < Gosu::Window
 
     @input = Gosu::Font.new(self, "visuals/ARCADE.TTF", 40)
     self.text_input = Gosu::TextInput.new
-    self.text_input.text = ""
+
+    if File.exist?("username.json")
+      user_json_file = File.read("username.json")
+      user_hash = JSON.parse(user_json_file)
+      previous_username = user_hash["username"]
+      self.text_input.text = previous_username
+    else
+      self.text_input.text = ""
+    end
     
 
     @start_message = Gosu::Font.new(self, "visuals/ARCADE.TTF", 45)
@@ -29,7 +37,7 @@ class WordDrop < Gosu::Window
     @start_music.play(looping = true)
 
     @hidden_list = WordList.new
-    get_words_from_grammarslayer
+    get_words_from_grammarslayer(1)
 
     @scene = :start
   end
@@ -49,11 +57,10 @@ class WordDrop < Gosu::Window
   def draw_start
     @background_image.draw(0,0,0)
     @title.draw("Word Drop", 125, 200, 2)
-    @start_message.draw("Press Enter to Start", 45, 300, 2)
+    @start_message.draw("Press Enter to Start", 75, 300, 2)
     @input.draw("Please Enter Username:", 75, 500, 45)
     @input.draw(self.text_input.text, 125, 550, 0)
   end
-
 
 
   def update
@@ -79,6 +86,13 @@ class WordDrop < Gosu::Window
   def button_down_start(id)
     if id == Gosu::KbReturn
       input = self.text_input.text  
+      
+      user_hash = {"username" => input}
+      
+      File.open("username.json", "w") do |f|
+        f.write(user_hash.to_json)
+      end
+
       response = Unirest.get("http://localhost:3000/api/users/username/#{input}")
       @user = response.body
       initialize_game
@@ -113,7 +127,6 @@ class WordDrop < Gosu::Window
 
 
 
-
   def initialize_end(fate)
     case fate
     when :too_many_words
@@ -124,18 +137,18 @@ class WordDrop < Gosu::Window
                              parameters: {
                                       user_id: @user["id"],
                                       score: @score.value,
-                                      level: 1
+                                      level: @level.value
                                     }
                         )
     when :less_than_five
-      @win_message = "Level Cleared!"
+      @win_message = "You cleared all the levels! Congrats!"
       @win_message_2 = "Your score is #{@score.value.to_s}!"
       response = Unirest.post(
                             "http://localhost:3000/api/game_plays", 
                              parameters: {
                                       user_id: @user["id"],
                                       score: @score.value,
-                                      level: 1
+                                      level: @level.value
                                     }
                         )
     end
@@ -149,7 +162,7 @@ class WordDrop < Gosu::Window
     @score.draw_end
     @background_image.draw(0,0,0)
 
-    @message_font.draw(@win_message, 150, 200, 1, 1, 1)
+    @message_font.draw(@win_message, 100, 200, 1, 1, 1)
     @message_font.draw(@win_message_2, 50, 300, 1, 1, 1)
 
     @message_font.draw(@lose_message, 150, 200, 1, 1, 1)
@@ -171,8 +184,11 @@ class WordDrop < Gosu::Window
     end      
   end
 
-  def get_words_from_grammarslayer
-    response = Unirest.get("http://localhost:3000/api/words")
+  def get_words_from_grammarslayer(current_level = 1)
+    response = Unirest.get(
+                            "http://localhost:3000/api/words",
+                            parameters: { level: current_level }
+                            )
     word_hashs = response.body["words"].shuffle!
 
     word_hashs.each {|word_hash| @hidden_list << Word.new(window: self, word_data: word_hash) }
@@ -183,25 +199,9 @@ class WordDrop < Gosu::Window
     @prompt = @prompts.sample
   end
 
-
-  def speed_increment
-    0.1
-  end
-
-  def level_up_increment
-     @count_increment += 15
-  end
-
-
   def level_up
     @level_up = true
-      @word_list.each do |word|
-      if word.speed != 0
-        word.speed += speed_increment
-      else 
-        word.speed = 0       
-      end
-    end 
+    @level.increase_level
   end
 
 

@@ -3,7 +3,7 @@ require 'gosu'
 class Score
   attr_accessor :value
 
-  def initialize(window, text, x, y)
+  def initialize(window)
     @font = Gosu::Font.new(window, "visuals/ARCADE.TTF", 50)
     @value = 0
     @x = 200
