@@ -7,7 +7,7 @@ class Score
     @font = Gosu::Font.new(window, "visuals/ARCADE.TTF", 50)
     @value = 0
     @x = 200
-    @y = 650
+    @y = 625
     @window = window
   end
 
@@ -17,16 +17,16 @@ class Score
   end
 
   def draw_end
-    @font.draw("Score", 250, @y, 2)
-    @font.draw("#{@value}", @x, @y, 2)
+    @font.draw("", 250, @y, 2)
+    @font.draw("", @x, @y, 2)
   end
   
   def correct
-      @value += 2
+      @value += 3
   end
 
   def incorrect
-     @value -= 1
+     @value -= 2
   end
 
   def count

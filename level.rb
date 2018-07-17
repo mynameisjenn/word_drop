@@ -7,7 +7,7 @@ class Level
     @font = Gosu::Font.new(window, "visuals/ARCADE.TTF", 50)
     @value = 1
     @x = 450
-    @y = 650
+    @y = 625
     @window = window
   end
 

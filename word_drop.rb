@@ -16,11 +16,13 @@ class WordDrop < Gosu::Window
   def initialize
     super(WIDTH, HEIGHT)
     self.caption = "Word Drop"
-    @background_image = Gosu::Image.new('visuals/back.png')
-    @title = Gosu::Font.new(self, "visuals/ARCADE.TTF", 60)
-
+    @background_image = Gosu::Image.new('visuals/start_screen_2.png')
+    @word_bubble = Gosu::Image.new('visuals/talk_bubble.gif')
+    @hamster = Gosu::Image.new("visuals/hamster.png")
+    @title = Gosu::Font.new(self, "visuals/ARCADE.TTF", 72)
     @input = Gosu::Font.new(self, "visuals/ARCADE.TTF", 40)
     self.text_input = Gosu::TextInput.new
+
 
     if File.exist?("username.json")
       user_json_file = File.read("username.json")
@@ -31,7 +33,6 @@ class WordDrop < Gosu::Window
       self.text_input.text = ""
     end
     
-
     @start_message = Gosu::Font.new(self, "visuals/ARCADE.TTF", 45)
     @start_music = Gosu::Song.new('sounds/sequence-8-bit-music-loop.wav')
     @start_music.play(looping = true)
@@ -56,10 +57,14 @@ class WordDrop < Gosu::Window
 
   def draw_start
     @background_image.draw(0,0,0)
-    @title.draw("Word Drop", 125, 200, 2)
-    @start_message.draw("Press Enter to Start", 75, 300, 2)
-    @input.draw("Please Enter Username:", 75, 500, 45)
-    @input.draw(self.text_input.text, 125, 550, 0)
+    @title.draw("Word Drop", @title.text_width("Word Drop") / 2.2, 100, 2)
+    @start_message.draw("Press Enter to Start", @title.text_width("Press Enter to Start") / 7, 250, 2)
+    @input.draw("Username:", 75, 575, 2)
+    @word_bubble.draw(250, 375, 2)
+    @hamster.draw(200, 450, 2)
+    
+    ## need to center this
+    @input.draw(self.text_input.text, 225, 575, 0)
   end
 
 
@@ -111,6 +116,7 @@ class WordDrop < Gosu::Window
             @correct_sound.play
           else
             @score.incorrect
+            
           end
         end
       end
@@ -122,7 +128,10 @@ class WordDrop < Gosu::Window
       @word_list.each do |word|
           word.move_left if word.speed != 0 && word.current_x >= 50 
       end
-    end 
+    else (id == Gosu::KbSpace)
+      @prompt = @prompts.sample
+      @score.incorrect
+    end
   end
 
 
@@ -130,7 +139,7 @@ class WordDrop < Gosu::Window
   def initialize_end(fate)
     case fate
     when :too_many_words
-      @lose_message = "The words stacked too high. Try again!"
+      @lose_message = "GAME OVER!"
       @lose_message_2 = "Your score is #{@score.value.to_s}!"
       response = Unirest.post(
                             "http://localhost:3000/api/game_plays", 
@@ -140,7 +149,7 @@ class WordDrop < Gosu::Window
                                       level: @level.value
                                     }
                         )
-    when :less_than_five
+    when :levels_cleared
       @win_message = "You cleared all the levels! Congrats!"
       @win_message_2 = "Your score is #{@score.value.to_s}!"
       response = Unirest.post(
@@ -155,6 +164,7 @@ class WordDrop < Gosu::Window
     @bottom_message = "Press P to play again,"
     @bottom_message_2 = "or Q to quit."
     @message_font = Gosu::Font.new(self, "visuals/ARCADE.TTF", 50)
+    @game_over_font = Gosu::Font.new(self, "visuals/ARCADE.TTF", 72)
     @scene = :end
   end
 
@@ -165,11 +175,11 @@ class WordDrop < Gosu::Window
     @message_font.draw(@win_message, 100, 200, 1, 1, 1)
     @message_font.draw(@win_message_2, 50, 300, 1, 1, 1)
 
-    @message_font.draw(@lose_message, 150, 200, 1, 1, 1)
-    @message_font.draw(@lose_message_2, 50, 300, 1, 1, 1)
+    @game_over_font.draw(@lose_message, 100, 150, 1, 1, 1)
+    @message_font.draw(@lose_message_2, 100, 350, 1, 1, 1)
 
-    @message_font.draw(@bottom_message, 50, 400, 1, 1, 1)
-    @message_font.draw(@bottom_message_2, 50, 450, 1, 1, 1)
+    @message_font.draw(@bottom_message, 50, 450, 1, 1, 1)
+    @message_font.draw(@bottom_message_2, 150, 500, 1, 1, 1)
   end
 
   def update_end
@@ -200,8 +210,8 @@ class WordDrop < Gosu::Window
   end
 
   def level_up
-    @level_up = true
     @level.increase_level
+    @level_up_sound.play
   end
 
 
@@ -218,7 +228,7 @@ class WordDrop < Gosu::Window
         if collided 
           word.speed = 0         
         else 
-          word.speed = 1
+          word.speed = 2
         end
         word.collision_with_floor
       end

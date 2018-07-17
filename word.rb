@@ -23,9 +23,9 @@ class Word
 
 
       colors = [
-              0xaa624CD1, 
-              0xaa00aa00, 
-              0xaa0000aa
+              0xFF302F34, 
+              0xFF08470B, 
+              0xFF1D0A46
             ]
 
       @color = Gosu::Color.argb(colors.sample)
@@ -43,7 +43,7 @@ class Word
       @height = @@font.height
       @border_width = 1
 
-      @speed = 1
+      @speed = 2
   end
 
   def check_type(word_type)

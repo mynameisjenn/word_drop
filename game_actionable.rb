@@ -7,16 +7,16 @@ module GameActionable
     @level = Level.new(self)
 
     @count = 0
-    @background = Gosu::Image.new('visuals/back.png')
+    @background = Gosu::Image.new('visuals/night_sky.png')
 
     @game_music = Gosu::Song.new('sounds/sequence-8-bit-music-loop.wav')
     @game_music.play(looping = true)
+
     @impact = Gosu::Sample.new('sounds/swooshy-fight-straight-hit.wav')
     @correct_sound = Gosu::Sample.new('sounds/laser.wav')
     @level_up_sound = Gosu::Sample.new('sounds/blip2.wav')
     @scene = :game
     
-    @level_up = false
     @word_list = WordList.new
   end
 
@@ -43,7 +43,7 @@ module GameActionable
       get_words_from_grammarslayer(@level.value)
     end
 
-    if @count / 5 == @level.value
+    if @count / 15 >= @level.value
       level_up
     end  
 
