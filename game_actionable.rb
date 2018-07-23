@@ -12,9 +12,10 @@ module GameActionable
     @game_music = Gosu::Song.new('sounds/sequence-8-bit-music-loop.wav')
     @game_music.play(looping = true)
 
+
     @impact = Gosu::Sample.new('sounds/swooshy-fight-straight-hit.wav')
     @correct_sound = Gosu::Sample.new('sounds/laser.wav')
-    @level_up_sound = Gosu::Sample.new('sounds/blip2.wav')
+    @level_up_sound = Gosu::Sample.new('sounds/levelup.wav')
     @scene = :game
     
     @word_list = WordList.new
@@ -39,7 +40,7 @@ module GameActionable
       @word_list << @hidden_list.shift
     end
 
-    if @hidden_list.length <= 30
+    if @hidden_list.length <= 15
       get_words_from_grammarslayer(@level.value)
     end
 
@@ -47,7 +48,10 @@ module GameActionable
       level_up
     end  
 
-    initialize_end(:too_many_words) if stacked_too_high?     
+    if stacked_too_high?
+      initialize_end(:too_many_words) 
+    end
+
   end
 
   def draw_game

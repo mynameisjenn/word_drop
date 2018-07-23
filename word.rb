@@ -94,9 +94,8 @@ class Word
   end
 
   def collision_with_floor
-    if current_y.floor >= 550
+    if current_y >= 550
       @speed = 0
-      @current_y = 550
     end
   end
 

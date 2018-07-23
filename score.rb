@@ -22,11 +22,11 @@ class Score
   end
   
   def correct
-      @value += 3
+      @value += 5
   end
 
   def incorrect
-     @value -= 2
+     @value -= 1
   end
 
   def count
